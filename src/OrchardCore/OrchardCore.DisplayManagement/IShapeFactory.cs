@@ -30,9 +30,9 @@ namespace OrchardCore.DisplayManagement
         /// <param name="shapeType">The type of shape to create.</param>
         /// <param name="model">The model to copy.</param>
         /// <returns></returns>
-        public static Task<IShape> CreateAsync<TModel>(this IShapeFactory factory, string shapeType, TModel model)
+        public static async Task<IShape> CreateAsync<TModel>(this IShapeFactory factory, string shapeType, TModel model)
         {
-            return factory.CreateAsync(shapeType, Arguments.From(model));
+            return await factory.CreateAsync(shapeType, Arguments.From(model));
         }
 
         private class ShapeImplementation : IShape, IPositioned
@@ -73,14 +73,14 @@ namespace OrchardCore.DisplayManagement
             }
         }
 
-        public static Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType, Func<Task<IShape>> shapeFactory)
+        public static async Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType, Func<Task<IShape>> shapeFactory)
         {
-            return factory.CreateAsync(shapeType, shapeFactory, null, null);
+            return await factory.CreateAsync(shapeType, shapeFactory, null, null);
         }
 
-        public static Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType)
+        public static async Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType)
         {
-            return factory.CreateAsync(shapeType, NewShape, null, null);
+            return await factory.CreateAsync(shapeType, NewShape, null, null);
         }
 
         /// <summary>
@@ -88,21 +88,21 @@ namespace OrchardCore.DisplayManagement
         /// </summary>
         /// <typeparam name="TModel">The type to instantiate.</typeparam>
         /// <param name="shapeType">The shape type to create.</param>
-        /// <param name="initialize">The initialization method.</param>
+        /// <param name="initializeAsync">The initialization method.</param>
         /// <returns></returns>
-        public static Task<IShape> CreateAsync<TModel>(this IShapeFactory factory, string shapeType, Func<TModel, Task> initialize)
+        public static async Task<IShape> CreateAsync<TModel>(this IShapeFactory factory, string shapeType, Func<TModel, Task> initializeAsync)
         {
-            return factory.CreateAsync(shapeType, async () =>
+            return await factory.CreateAsync(shapeType, async () =>
             {
                 var shape = CreateShape(typeof(TModel));
-                await initialize((TModel)shape);
+                await initializeAsync((TModel)shape);
                 return shape;
             });
         }
         
-        public static Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType, INamedEnumerable<object> parameters = null)
+        public static async Task<IShape> CreateAsync(this IShapeFactory factory, string shapeType, INamedEnumerable<object> parameters = null)
         {
-            return factory.CreateAsync(shapeType, NewShape, null, createdContext => {
+            return await factory.CreateAsync(shapeType, NewShape, null, createdContext => {
 
                 var shape = (Shape)createdContext.Shape;
 

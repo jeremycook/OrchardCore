@@ -36,7 +36,11 @@ namespace OrchardCore.DisplayManagement.Implementation
             // await New.FooAsync()
             // New.Foo()
 
-            if (binder.Name.EndsWith("Async"))
+            var returnType = binder.ReturnType;
+            var binderReturnsTask = returnType == typeof(Task) ||
+                (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>));
+
+            if (binderReturnsTask)
             {
                 var binderName = binder.Name.Substring(binder.Name.Length - "Async".Length);
                 result = ShapeFactoryExtensions.CreateAsync(this, binderName, Arguments.From(args, binder.CallInfo.ArgumentNames));
